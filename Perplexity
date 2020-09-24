@@ -1,0 +1,41 @@
+from gensim.models import LdaModel, LdaMulticore
+from gensim.test.utils import common_texts
+from gensim.corpora.dictionary import Dictionary
+import numpy as np
+common_dictionary = Dictionary(common_texts)
+common_corpus = [common_dictionary.doc2bow(text) for text in common_texts]
+
+# Train the model on the corpus.
+mallet_path = root_path + '/mallet-2.0.8/bin/mallet' # update this path
+lda_mallet = gensim.models.wrappers.LdaMallet(mallet_path, corpus=common_corpus, num_topics=100, id2word=common_dictionary, prefix='./')
+
+# copy the parameters in pretrained mellet_model to gensim LdaModel
+def mallet_to_lda(mallet_model):
+    model_gensim = LdaModel(
+        id2word=mallet_model.id2word, num_topics=mallet_model.num_topics,
+        alpha=mallet_model.alpha, iterations=1000,
+        gamma_threshold=0.001,
+        dtype=np.float32
+    )
+    model_gensim.sync_state()
+    model_gensim.state.sstats = mallet_model.wordtopics
+    return model_gensim
+
+# copy parameters
+lda = mallet_to_lda(lda_mallet)
+
+# print the topic word lists
+for p, list in lda.show_topics(num_topics=100, num_words=10, formatted=False):
+    each_topic = []
+    for w, score in list:
+        each_topic.append(w)
+    print(' '.join(each_topic))
+
+
+# test_dictionary = Dictionary(common_texts)
+test_corpus = [common_dictionary.doc2bow(text) for text in test_corpus]
+
+perwordbound = lda.log_perplexity(test_corpus)
+# Perplexity: a measure of how good the model is. lower the better.
+print('\nperwordbound: ', perwordbound)  
+print('\nPerplexity: ', np.exp2(-perwordbound))
