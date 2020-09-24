@@ -4,6 +4,18 @@ from gensim.corpora.dictionary import Dictionary
 import numpy as np
 import gensim
 
+'''
+command line to compute perplexity:
+topic-100
+1) bin\mallet import-file --input ./data_wsj/train_label.txt --output ./data_wsj/train_label.mallet --keep-sequence True --remove-stopwords True
+2) bin\mallet train-topics --input ./data_wsj/train_label.mallet --inferencer-filename ./data_wsj/infer.mallet --num-topics 100 --output-topic-keys ./data_wsj/topic-100-keys.txt --output-doc-topics ./data_wsj/topic-100-composition.txt --evaluator-filename ./data_wsj/eval_100.mallet --num-top-words 10
+3) bin\mallet import-file --input ./data_wsj/test_label.txt --output ./data_wsj/test_label.mallet --keep-sequence True --remove-stopwords True --use-pipe-from ./data_wsj/train_label.mallet
+4) bin\mallet evaluate-topics --evaluator ./data_wsj/eval_100.mallet --input ./data_wsj/test_label.mallet --output-doc-probs ./data_wsj/doc-probs-100.txt --output-prob ./data_wsj/prob-100.txt
+5) bin\mallet run cc.mallet.util.DocumentLengths --input ./data_wsj/test_label.mallet > wordcount-100.txt
+perplexity = np.exp(-(./data_wsj/prob-100.txt) / sum(wordcount-100.txt))
+***********************************************************************This perplexity is much lower than the below method****************************************************************
+'''
+
 common_dictionary = Dictionary(common_texts)
 common_corpus = [common_dictionary.doc2bow(text) for text in common_texts]
 
